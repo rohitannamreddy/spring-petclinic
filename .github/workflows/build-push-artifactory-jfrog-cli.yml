@@ -75,8 +75,6 @@ jobs:
           echo "Tagging image: $IMAGE_NAME:$IMAGE_TAG_SHA as $IMAGE_NAME:$IMAGE_TAG_LATEST"
           docker tag $IMAGE_NAME:$IMAGE_TAG_SHA $IMAGE_NAME:$IMAGE_TAG_LATEST
 
-          jf docker scan ${{ env.JFROG_PLATFORM_URL }}/${{ env.JFROG_DOCKER_REPO_KEY }}/maven-build-test:${{ github.run_number }}
-
           docker login ${{ env.JFROG_PLATFORM_URL }} -u ${{ secrets.JFROG_USERNAME }} -p ${{ secrets.JFROG_PASSWORD }}
           echo "Pushing Docker image: $IMAGE_NAME:$IMAGE_TAG_SHA to Artifactory repository: ${{ env.JFROG_DOCKER_REPO_KEY }}"
           docker push $IMAGE_NAME:$IMAGE_TAG_SHA 
