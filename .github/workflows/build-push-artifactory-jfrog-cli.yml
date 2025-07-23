@@ -90,7 +90,7 @@ jobs:
           echo "Triggering Xray scan for build '${{ env.ARTIFACTORY_BUILD_NAME }}/${{ env.ARTIFACTORY_BUILD_NUMBER }}'..."
           # The 'jfrog build scan' command triggers Xray analysis and
           # will cause the pipeline to fail if a policy with 'Fail Build Job' action is violated.
-          jf bs \
+          jfrog rt bs \
             ${{ env.ARTIFACTORY_BUILD_NAME }} \
             ${{ env.ARTIFACTORY_BUILD_NUMBER }} \
             --url=${{ env.JFROG_PLATFORM_URL }} \
