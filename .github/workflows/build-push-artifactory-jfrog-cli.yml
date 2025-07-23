@@ -1,6 +1,6 @@
 # .github/workflows/build-and-push-to-artifactory.yml
 
-name: Spring Boot Build-Image & Push to Artifactory using JFrog CLI
+name: springboot_build_push_rt_cli
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
       - name: Publish Build Info to Artifactory
         run: |
           echo "Publishing build info for '${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}' to Artifactory..."
-          jf rt build-publish "${{ env.JFROG_CLI_BUILD_NAME }}" ${{ env.JFROG_CLI_BUILD_NUMBER }}
+          jf rt build-publish ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}
 
       # - name: Trigger Xray Scan for the Build
       #   run: |
@@ -99,7 +99,7 @@ jobs:
         run: |
           echo "Triggering Xray scan for build '${{ env.ARTIFACTORY_BUILD_NAME }}/${{ env.ARTIFACTORY_BUILD_NUMBER }}'..."
           jf c show
-          jf build-scan "${{ env.JFROG_CLI_BUILD_NAME }}" ${{ env.JFROG_CLI_BUILD_NUMBER }} --fail # This flag causes the CLI to exit with an error code if policies are violated
+          jf build-scan ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }} --fail # This flag causes the CLI to exit with an error code if policies are violated
           echo "Xray scan completed. Check scan results in JFrog Platform for details."
 
       - name: Clean up JFrog CLI environment (optional)
