@@ -82,7 +82,7 @@ jobs:
           echo "Pushing Docker image: $IMAGE_NAME:$IMAGE_TAG_LATEST to Artifactory repository: ${{ env.JFROG_DOCKER_REPO_KEY }}"
           jf docker push $IMAGE_NAME:$IMAGE_TAG_LATEST
 
-          jf docker scan ${{ env.JFROG_PLATFORM_URL }}${{ env.JFROG_DOCKER_REPO_KEY }}/maven-build-test:${{ github.run_number }}
+          jf docker scan $IMAGE_NAME:$IMAGE_TAG_SHA
 
       - name: Publish Build Info to Artifactory
         run: |
