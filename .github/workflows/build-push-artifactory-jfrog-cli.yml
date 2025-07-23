@@ -87,7 +87,7 @@ jobs:
       - name: Publish Build Info to Artifactory
         run: |
           echo "Publishing build info for '${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}' to Artifactory..."
-          jf rt build-publish ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}
+          jf rt build-publish "${{ env.JFROG_CLI_BUILD_NAME }}" ${{ env.JFROG_CLI_BUILD_NUMBER }}
 
       # - name: Trigger Xray Scan for the Build
       #   run: |
