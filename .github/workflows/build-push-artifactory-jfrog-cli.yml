@@ -99,7 +99,7 @@ jobs:
         run: |
           echo "Triggering Xray scan for build '${{ env.ARTIFACTORY_BUILD_NAME }}/${{ env.ARTIFACTORY_BUILD_NUMBER }}'..."
           jf c show
-          jf build-scan ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }} --fail # This flag causes the CLI to exit with an error code if policies are violated
+          jf build-scan "${{ env.JFROG_CLI_BUILD_NAME }}" ${{ env.JFROG_CLI_BUILD_NUMBER }} --fail # This flag causes the CLI to exit with an error code if policies are violated
           echo "Xray scan completed. Check scan results in JFrog Platform for details."
 
       - name: Clean up JFrog CLI environment (optional)
