@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JFROG_PLATFORM_URL: ${{ vars.JFROG_PLATFORM_URL }} 
+      JFROG_XRAY_URL: ${{ vars.JFROG_XRAY_URL }}
       JFROG_DOCKER_REGISTRY_HOST: ${{ vars.JFROG_DOCKER_REGISTRY_HOST }} 
       JFROG_MAVEN_REPO_KEY: rohit-libs-release
       JFROG_MAVEN_SNAPSHOT_REPO_KEY: rohit-libs-snapshot
@@ -93,7 +94,7 @@ jobs:
           jfrog rt bs \
             ${{ env.ARTIFACTORY_BUILD_NAME }} \
             ${{ env.ARTIFACTORY_BUILD_NUMBER }} \
-            --url=${{ env.JFROG_PLATFORM_URL }} \
+            --url=${{ env.JFROG_XRAY_URL }} \
             --fail # This flag causes the CLI to exit with an error code if policies are violated
 
           echo "Xray scan completed. Check scan results in JFrog Platform for details."
