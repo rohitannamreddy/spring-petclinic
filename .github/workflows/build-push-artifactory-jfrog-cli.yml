@@ -83,7 +83,12 @@ jobs:
 
       - name: Scan Docker Image with JFrog Xray
         run: |
-          jf docker scan $IMAGE_NAME:$IMAGE_TAG_SHA
+          IMAGE_NAME="${{ env.JFROG_DOCKER_REGISTRY_HOST }}/${{ env.JFROG_DOCKER_REPO_KEY }}/maven-build-test" # Base image name without tag
+          IMAGE_TAG_SHA="${{ github.sha }}" # Tag with commit SHA
+          IMAGE_TAG_LATEST="latest" # Tag with latest
+
+          echo "Scanning the docker image: $IMAGE_NAME:$IMAGE_TAG_LATEST with JFrog Xray"
+          jf docker scan $IMAGE_NAME:$IMAGE_TAG_LATEST
 
       - name: Publish Build Info to Artifactory
         run: |
