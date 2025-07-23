@@ -103,7 +103,7 @@ jobs:
           jf build-scan \
             ${{ env.ARTIFACTORY_BUILD_NAME }} \
             ${{ env.ARTIFACTORY_BUILD_NUMBER }} \
-            --url=${{ env.JF_URL }} \
+            --url=${{ env.JFROG_XRAY_URL }} \
             --fail # This flag causes the CLI to exit with an error code if policies are violated
 
           echo "Xray scan completed. Check scan results in JFrog Platform for details."
