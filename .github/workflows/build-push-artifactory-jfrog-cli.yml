@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - github-actions
   pull_request:
     branches:
       - github-actions
