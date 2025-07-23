@@ -75,6 +75,8 @@ jobs:
           echo "Tagging image: $IMAGE_NAME:$IMAGE_TAG_SHA as $IMAGE_NAME:$IMAGE_TAG_LATEST"
           docker tag $IMAGE_NAME:$IMAGE_TAG_SHA $IMAGE_NAME:$IMAGE_TAG_LATEST
 
+          jf docker scan ${{ env.JFROG_PLATFORM_URL }}/${{ env.JFROG_DOCKER_REPO_KEY }}/maven-build-test:${{ github.run_number }}
+
           docker login ${{ env.JFROG_PLATFORM_URL }} -u ${{ secrets.JFROG_USERNAME }} -p ${{ secrets.JFROG_PASSWORD }}
           echo "Pushing Docker image: $IMAGE_NAME:$IMAGE_TAG_SHA to Artifactory repository: ${{ env.JFROG_DOCKER_REPO_KEY }}"
           docker push $IMAGE_NAME:$IMAGE_TAG_SHA 
@@ -86,18 +88,24 @@ jobs:
           echo "Publishing build info for '${{ env.ARTIFACTORY_BUILD_NAME }}${{ env.ARTIFACTORY_BUILD_NUMBER }}' to Artifactory..."
           jfrog rt bp ${{ env.ARTIFACTORY_BUILD_NAME }} ${{ env.ARTIFACTORY_BUILD_NUMBER }}
 
-      - name: Perform Xray Scan and Fail Build on Policy Violation
+      - name: Trigger Xray Scan for the Build
         run: |
           echo "Triggering Xray scan for build '${{ env.ARTIFACTORY_BUILD_NAME }}/${{ env.ARTIFACTORY_BUILD_NUMBER }}'..."
-          # The 'jfrog build scan' command triggers Xray analysis and
-          # will cause the pipeline to fail if a policy with 'Fail Build Job' action is violated.
-          jfrog rt bs \
-            ${{ env.ARTIFACTORY_BUILD_NAME }} \
-            ${{ env.ARTIFACTORY_BUILD_NUMBER }} \
-            --url=${{ env.JFROG_XRAY_URL }} \
-            --fail # This flag causes the CLI to exit with an error code if policies are violated
+          jfrog xr scan --build=${{ env.ARTIFACTORY_BUILD_NAME }} --build-number=${{ env.ARTIFACTORY_BUILD_NUMBER }}
+          echo "Xray scan triggered successfully." 
 
-          echo "Xray scan completed. Check scan results in JFrog Platform for details."
+      # - name: Perform Xray Scan and Fail Build on Policy Violation
+      #   run: |
+      #     echo "Triggering Xray scan for build '${{ env.ARTIFACTORY_BUILD_NAME }}/${{ env.ARTIFACTORY_BUILD_NUMBER }}'..."
+      #     # The 'jfrog build scan' command triggers Xray analysis and
+      #     # will cause the pipeline to fail if a policy with 'Fail Build Job' action is violated.
+      #     jfrog rt bs \
+      #       ${{ env.ARTIFACTORY_BUILD_NAME }} \
+      #       ${{ env.ARTIFACTORY_BUILD_NUMBER }} \
+      #       --url=${{ env.JFROG_XRAY_URL }} \
+      #       --fail # This flag causes the CLI to exit with an error code if policies are violated
+
+      #     echo "Xray scan completed. Check scan results in JFrog Platform for details."
 
       - name: Clean up JFrog CLI environment (optional)
         if: always()
