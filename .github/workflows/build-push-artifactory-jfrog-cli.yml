@@ -87,13 +87,13 @@ jobs:
           IMAGE_TAG_SHA="${{ github.sha }}" # Tag with commit SHA
           IMAGE_TAG_LATEST="latest" # Tag with latest
 
-          echo "Scanning the docker image: $IMAGE_NAME:$IMAGE_TAG_LATEST with JFrog Xray"
+          echo "Scanning docker image: $IMAGE_NAME:$IMAGE_TAG_LATEST with JFrog Xray"
           jf docker scan $IMAGE_NAME:$IMAGE_TAG_LATEST
 
       - name: Publish Build Info to Artifactory
         run: |
           echo "Publishing build info for '${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}' to Artifactory..."
-          jf build-publish ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}
+          jf rt build-publish ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}
 
       - name: Perform Xray Scan and Fail Build on Policy Violation
         run: |
