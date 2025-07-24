@@ -101,7 +101,7 @@ jobs:
           jf c show
           # This flag causes the CLI to exit with an error code if policies are violated
           # and needs atleast one Xray policy to be configured to fail the build 
-          jf build-scan ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }} #--fail 
+          jf build-scan ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }} --fail 
           echo "Xray scan completed. Check scan results in JFrog Platform for details."
 
       - name: Clean up JFrog CLI environment
