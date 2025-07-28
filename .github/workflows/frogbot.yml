@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize] # Triggers scan-pr flow for every opened/updated pull request
   push: # Triggers scan-repo flow for every push to the specified branches
     branches:
+      - main
       - github-actions
   schedule:
     - cron: "0 0 * * *"   # The repository will be scanned once a day at 00:00 GMT.
