@@ -36,6 +36,8 @@ import org.springframework.web.servlet.ModelAndView;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookupFactory;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -103,6 +105,33 @@ class OwnerController {
 
 		// This line is added to introduce an exploitable Log4j logging pattern for demo.
 		logger.info("Processing find form with last name: {}", owner.getLastName());
+
+		// This code is added to introduce an exploitable Apache Commons Text
+		// vulnerability (CVE-2022-42889) for demo.
+		String vulnerableInput = owner.getLastName();
+		StringSubstitutor interpolator = StringSubstitutor.createInterpolator();
+		// The vulnerable method call is StringSubstitutor.replace(String)
+
+		// --- DIAGNOSTICS FOR COMMONS TEXT VULNERABILITY ---
+		//System.out.println("------------------------------------------------------------------");
+		//System.out.println("Input to StringSubstitutor: " + vulnerableInput);
+
+		String resultOfInterpolation = interpolator.replace(vulnerableInput);
+		//System.out.println("Result from interpolating user input: " + resultOfInterpolation);
+
+		// Explicitly test a dangerous interpolator that *should* cause an error if
+		// allowed/active
+		try {
+			String osNameTest = interpolator.replace("${script:javascript:java.lang.System.getProperty('os.name')}");
+			System.out.println("Result from Script Test (should be OS name or error): " + osNameTest);
+		}
+		catch (Exception e) {
+			System.err
+				.println("EXCEPTION from Script Test (Indicates applicability if caught here!): " + e.getMessage());
+			e.printStackTrace(System.err); // Print stack trace for more details
+		}
+		//System.out.println("------------------------------------------------------------------");
+		// --- END CRITICAL DIAGNOSTICS ---
 
 		// find owners by last name
 		Page<Owner> ownersResults = findPaginatedForOwnersLastName(page, owner.getLastName());

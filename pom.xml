@@ -42,6 +42,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>1.9</version> 
+    </dependency>
     <!-- Explicitly adding Log4j 2 dependencies to introduce a known vulnerability for demo purposes -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
