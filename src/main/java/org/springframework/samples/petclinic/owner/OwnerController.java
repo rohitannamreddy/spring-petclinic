@@ -113,11 +113,12 @@ class OwnerController {
 		// The vulnerable method call is StringSubstitutor.replace(String)
 
 		// --- DIAGNOSTICS FOR COMMONS TEXT VULNERABILITY ---
-		//System.out.println("------------------------------------------------------------------");
-		//System.out.println("Input to StringSubstitutor: " + vulnerableInput);
+		// System.out.println("------------------------------------------------------------------");
+		// System.out.println("Input to StringSubstitutor: " + vulnerableInput);
 
 		String resultOfInterpolation = interpolator.replace(vulnerableInput);
-		//System.out.println("Result from interpolating user input: " + resultOfInterpolation);
+		// System.out.println("Result from interpolating user input: " +
+		// resultOfInterpolation);
 
 		// Explicitly test a dangerous interpolator that *should* cause an error if
 		// allowed/active
@@ -130,7 +131,7 @@ class OwnerController {
 				.println("EXCEPTION from Script Test (Indicates applicability if caught here!): " + e.getMessage());
 			e.printStackTrace(System.err); // Print stack trace for more details
 		}
-		//System.out.println("------------------------------------------------------------------");
+		// System.out.println("------------------------------------------------------------------");
 		// --- END CRITICAL DIAGNOSTICS ---
 
 		// find owners by last name
