@@ -40,6 +40,9 @@ jobs:
       - name: Clean Maven Local Repository
         run: rm -rf ~/.m2/repository
 
+      - name: 🛠️ Set up /etc/hosts for Artifactory
+        run: echo "34.127.125.11 artifactory.rohita.com" | sudo tee -a /etc/hosts
+
       - name: Set up JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         with:
