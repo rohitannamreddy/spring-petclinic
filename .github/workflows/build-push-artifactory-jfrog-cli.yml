@@ -1,0 +1,116 @@
+# .github/workflows/build-and-push-to-artifactory.yml
+
+name: springboot_build_push_rt_cli
+
+on:
+  push:
+    branches:
+      - main
+      - github-actions
+  pull_request:
+    branches:
+      - github-actions
+  workflow_dispatch:   
+
+jobs:
+  build_test_package_publish:
+    runs-on: ubuntu-latest
+    env:
+      JFROG_PLATFORM_URL: ${{ vars.JFROG_PLATFORM_URL }} 
+      JF_URL: ${{ vars.JF_URL }}
+      JFROG_XRAY_URL: ${{ vars.JFROG_XRAY_URL }}
+      JFROG_DOCKER_REGISTRY_HOST: ${{ vars.JFROG_DOCKER_REGISTRY_HOST }} 
+      JFROG_MAVEN_REPO_KEY: rohit-libs-release
+      JFROG_MAVEN_SNAPSHOT_REPO_KEY: rohit-libs-snapshot
+      JFROG_DOCKER_REPO_KEY: rohit-docker
+      ARTIFACTORY_BUILD_NAME: spring-petclinic-docker-build
+      ARTIFACTORY_BUILD_NUMBER: ${{ github.run_number }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java Development Kit (JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Clean Maven Local Repository
+        run: rm -rf ~/.m2/repository
+
+      - name: Set up /etc/hosts for Artifactory
+        run: echo "34.197.47.119 artifactory.rohita.com" | sudo tee -a /etc/hosts
+
+      - name: Set up JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        with:
+          version: 'latest'
+        env:
+          JF_URL: ${{ env.JFROG_PLATFORM_URL }}
+          JF_USER: ${{ secrets.JFROG_USERNAME }}
+          JF_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+          #JF_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Maven to use Artifactory
+        run: |
+          echo "Configuring Maven to use Artifactory repository: ${{ env.JFROG_MAVEN_REPO_KEY }}"
+          jf mvn-config --repo-resolve-releases=${{ env.JFROG_MAVEN_REPO_KEY }} --repo-resolve-snapshots=${{ env.JFROG_MAVEN_SNAPSHOT_REPO_KEY }}
+          echo "Maven configuration complete."
+
+      - name: Compile and Run Tests with Maven
+        run: |
+          echo "Executing Maven clean install via JFrog CLI..."
+          MVN_COMMAND="clean install"
+          jf mvn $MVN_COMMAND
+
+      - name: Build Docker Image with Spring Boot Plugin
+        id: spring_boot_build_image
+        run: |
+          IMAGE_NAME="${{ env.JFROG_DOCKER_REGISTRY_HOST }}/${{ env.JFROG_DOCKER_REPO_KEY }}/maven-build-test" # Base image name without tag
+          IMAGE_TAG_SHA="${{ github.sha }}" # Tag with commit SHA
+          IMAGE_TAG_LATEST="latest" # Tag with latest
+
+          echo "Building Docker image: $IMAGE_NAME:$IMAGE_TAG_SHA"
+          ./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=$IMAGE_NAME:$IMAGE_TAG_SHA
+
+          echo "Tagging image: $IMAGE_NAME:$IMAGE_TAG_SHA as $IMAGE_NAME:$IMAGE_TAG_LATEST"
+          docker tag $IMAGE_NAME:$IMAGE_TAG_SHA $IMAGE_NAME:$IMAGE_TAG_LATEST
+
+          docker login ${{ env.JFROG_PLATFORM_URL }} -u ${{ secrets.JFROG_USERNAME }} -p ${{ secrets.JFROG_PASSWORD }}
+          echo "Pushing Docker image: $IMAGE_NAME:$IMAGE_TAG_SHA to Artifactory repository: ${{ env.JFROG_DOCKER_REPO_KEY }}"
+          jf docker push $IMAGE_NAME:$IMAGE_TAG_SHA 
+          echo "Pushing Docker image: $IMAGE_NAME:$IMAGE_TAG_LATEST to Artifactory repository: ${{ env.JFROG_DOCKER_REPO_KEY }}"
+          jf docker push $IMAGE_NAME:$IMAGE_TAG_LATEST
+
+      - name: Scan Docker Image with JFrog Xray
+        run: |
+          IMAGE_NAME="${{ env.JFROG_DOCKER_REGISTRY_HOST }}/${{ env.JFROG_DOCKER_REPO_KEY }}/maven-build-test" # Base image name without tag
+          IMAGE_TAG_SHA="${{ github.sha }}" # Tag with commit SHA
+          IMAGE_TAG_LATEST="latest" # Tag with latest
+
+          echo "Scanning docker image: $IMAGE_NAME:$IMAGE_TAG_LATEST with JFrog Xray"
+          jf docker scan $IMAGE_NAME:$IMAGE_TAG_SHA --vuln --watches=security_watch_all
+
+      - name: Publish Build Info to Artifactory
+        run: |
+          echo "Publishing build info for '${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}' to Artifactory..."
+          jf rt build-publish ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}
+
+      - name: Perform Xray Scan and Fail Build on Policy Violation
+        run: |
+          echo "Triggering Xray scan for build '${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }}'..."
+          jf c show
+          # This flag causes the CLI to exit with an error code if policies are violated
+          # and needs atleast one Xray policy to be configured to fail the build 
+          jf build-scan ${{ env.JFROG_CLI_BUILD_NAME }} ${{ env.JFROG_CLI_BUILD_NUMBER }} --fail 
+          echo "Xray scan completed. Check scan results in JFrog Platform for details."
+
+      - name: Clean up JFrog CLI environment
+        if: always()
+        run: |
+          echo "Cleaning up JFrog CLI build info and configuration..."
+          jf rt build-clean ${{ env.ARTIFACTORY_BUILD_NAME }} ${{ env.ARTIFACTORY_BUILD_NUMBER }}
+          jf config remove ${{ env.JFROG_PLATFORM_URL }}
+

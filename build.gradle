@@ -30,6 +30,7 @@ ext.springJavaformatCheckstyleVersion = "0.0.46"
 ext.webjarsLocatorLiteVersion = "1.1.0"
 ext.webjarsFontawesomeVersion = "4.7.0"
 ext.webjarsBootstrapVersion = "5.3.6"
+ext.postgresqlVersion = "42.7.7"
 
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -46,7 +47,7 @@ dependencies {
   runtimeOnly 'com.github.ben-manes.caffeine:caffeine'
   runtimeOnly 'com.h2database:h2'
   runtimeOnly 'com.mysql:mysql-connector-j'
-  runtimeOnly 'org.postgresql:postgresql'
+  runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-testcontainers'
